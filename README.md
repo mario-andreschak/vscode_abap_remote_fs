@@ -1,3 +1,5 @@
+# WORK IN PROGRESS, DO NOT USE IF YOU DONT WANT TO CONTRIBUTE
+
 # ABAP remote filesystem for visual studio code (beta)
 
 Turns Visual studio code into an IDE for ABAP development, operating directly on your SAP server.
