@@ -14,7 +14,17 @@
     "strict": true,
     "noUnusedLocals": false,
     "composite": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "abap-adt-api": [
+        "node_modules/abap-adt-api"
+      ],
+      "abap-adt-api/*": [
+        "node_modules/abap-adt-api/*"
+      ]
+    }
   },
   "include": [
     "src"

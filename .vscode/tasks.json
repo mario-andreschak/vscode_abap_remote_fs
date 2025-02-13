@@ -56,7 +56,6 @@
       "label": "watch server",
       "script": "watch",
       "path": "server/",
-      "problemMatcher": "$ts-webpack-watch",
       "isBackground": true,
       "presentation": {
         "reveal": "never"
@@ -75,7 +74,6 @@
       "label": "watch client",
       "script": "watch",
       "path": "client/",
-      "problemMatcher": "$ts-webpack-watch",
       "isBackground": true,
       "presentation": {
         "reveal": "never"

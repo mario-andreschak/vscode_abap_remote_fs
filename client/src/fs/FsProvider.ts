@@ -12,7 +12,9 @@ import {
 } from "vscode"
 import { caughtToString, log } from "../lib"
 import { isAbapFile, isAbapFolder, isFolder } from "abapfs"
+import { getObjectTypeFromPath, getObjectNameFromPath, validateObjectName, getDefaultContent } from "../lib/objectTypes"
 import { selectTransportIfNeeded } from "../adt/AdtTransports"
+import { create } from "abapObject"
 
 export class FsProvider implements FileSystemProvider {
   private static instance: FsProvider
@@ -82,10 +84,67 @@ export class FsProvider implements FileSystemProvider {
     )
   }
 
-  public async writeFile(uri: Uri, content: Uint8Array): Promise<void> {
+  public async writeFile(uri: Uri, content: Uint8Array, options: { create: boolean, overwrite: boolean }): Promise<void> {
     try {
       const root = await getOrCreateRoot(uri.authority)
-      const node = await root.getNodeAsync(uri.path)
+      let node = await root.getNodeAsync(uri.path)
+
+      // Handle new file creation
+      if (!node && options.create) {
+        try {
+          // Get object type and name from path
+          const objectType = getObjectTypeFromPath(uri.path)
+          const objectName = getObjectNameFromPath(uri.path)
+
+          // Validate object name
+          if (!validateObjectName(objectName)) {
+            throw FileSystemError.NoPermissions(
+              "Invalid ABAP object name. Must start with Y or Z and contain only A-Z, 0-9, _"
+            )
+          }
+
+          // Get transport assignment
+          const trsel = await selectTransportIfNeeded(uri)
+          if (trsel.cancelled) return
+
+          // Create the ABAP object
+          const service = root.service
+          const newObject = await create(
+            objectType.adtType,
+            objectName,
+            `/sap/bc/adt/${objectType.category.toLowerCase()}/${objectType.category.toLowerCase()}`,
+            false,
+            "",
+            undefined,
+            "",
+            service
+          )
+
+          // Initialize with default content
+          const defaultContent = getDefaultContent(objectName, objectType)
+          const lock = await root.lockManager.requestLock(uri.path)
+          if (lock.status !== "locked") {
+            throw FileSystemError.NoPermissions("Unable to acquire lock for new object")
+          }
+
+          await newObject.write(defaultContent, lock.LOCK_HANDLE, trsel.transport)
+          await root.lockManager.requestUnlock(uri.path, true)
+
+          // Refresh to get the new node
+          node = await root.getNodeAsync(uri.path)
+          if (!node) throw FileSystemError.FileNotFound(uri)
+
+          // Notify about the creation
+          this.pEventEmitter.fire([{ type: FileChangeType.Created, uri }])
+        } catch (error: any) {
+          const errorMessage = error.message || "Unknown error occurred"
+          throw FileSystemError.NoPermissions(
+            `Failed to create ABAP object: ${errorMessage}`
+          )
+        }
+      }
+
+      // Handle write operation
       if (isAbapFile(node)) {
         const trsel = await selectTransportIfNeeded(uri)
         if (trsel.cancelled) return

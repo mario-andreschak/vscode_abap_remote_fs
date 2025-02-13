@@ -15,3 +15,7 @@ tmp
 *.tsbuildinfo
 bookmarks.json
 *.cpuprofile
+.clinerules
+memory-bank/
+package-lock.json
+*.code-workspace

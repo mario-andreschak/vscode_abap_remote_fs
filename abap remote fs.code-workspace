@@ -91,6 +91,18 @@
     "typescript.format.insertSpaceBeforeFunctionParenthesis": false,
     "typescript.format.placeOpenBraceOnNewLineForControlBlocks": false,
     "typescript.format.placeOpenBraceOnNewLineForFunctions": false,
-    "typescript.preferences.quoteStyle": "auto"
+    "typescript.preferences.quoteStyle": "auto",
+    "abapfs.remote": {
+      "MySAP_CAL": {
+        "name": "MySAP_CAL",
+        "url": "https://100.26.19.18:44300",
+        "username": "DEVELOPER",
+        "password": "",
+        "language": "en",
+        "client": "001",
+        "allowSelfSigned": true,
+        "diff_formatter": "ADT formatter"
+      }
+    }
   }
 }
